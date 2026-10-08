@@ -3,9 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 
 from database import get_connection, initialize_database
-import sqlite3
 
-from schemas import UserCreate
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,30 +30,28 @@ def get_users():
         ).fetchall()
 
     return [dict(user) for user in users]
-@app.post("/api/v1/users", status_code=201)
-def create_user(user: UserCreate):
-    try:
-        with get_connection() as connection:
-            cursor = connection.execute(
-                "INSERT INTO users (name, email) VALUES (?, ?)",
-                (user.name, str(user.email)),
-            )
+@app.get("/api/v1/users/{user_id}")
+def get_user(user_id: int):
+    if user_id <= 0:
+        raise HTTPException(
+            status_code=422,
+            detail="User ID must be a positive number.",
+        )
 
-            created_user = connection.execute(
-                """
-                SELECT id, name, email, created_at
-                FROM users
-                WHERE id = ?
-                """,
-                (cursor.lastrowid,),
-            ).fetchone()
+    with get_connection() as connection:
+        user = connection.execute(
+            """
+            SELECT id, name, email, created_at
+            FROM users
+            WHERE id = ?
+            """,
+            (user_id,),
+        ).fetchone()
 
-        return dict(created_user)
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found.",
+        )
 
-    except sqlite3.IntegrityError as error:
-        if error.sqlite_errorname == "SQLITE_CONSTRAINT_UNIQUE":
-            raise HTTPException(
-                status_code=409,
-                detail="A user with this email already exists.",
-            ) from error
-        raise
+    return dict(user)

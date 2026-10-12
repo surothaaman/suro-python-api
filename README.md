@@ -20,16 +20,16 @@ A standalone REST API built with FastAPI and SQLite. It manages users through ra
 
 ## Project files
 
-| File | Purpose |
-|---|---|
-| main.py | Application startup, routes, SQL operations, and HTTP errors |
-| database.py | Database path, connection management, transactions, and table initialization |
-| schemas.py | UserCreate and UserUpdate request validation |
-| requirements.txt | Python dependencies |
-| .gitignore | Excludes local databases, environments, and secrets |
-| README.md | Setup, API usage, and testing instructions |
-| suro.db | Local database created at startup; not committed to Git |
-| venv/ | Local Python environment; not committed to Git |
+| File             | Purpose                                                                      |
+| ---------------- | ---------------------------------------------------------------------------- |
+| main.py          | Application startup, routes, SQL operations, and HTTP errors                 |
+| database.py      | Database path, connection management, transactions, and table initialization |
+| schemas.py       | UserCreate and UserUpdate request validation                                 |
+| requirements.txt | Python dependencies                                                          |
+| .gitignore       | Excludes local databases, environments, and secrets                          |
+| README.md        | Setup, API usage, and testing instructions                                   |
+| suro.db          | Local database created at startup; not committed to Git                      |
+| venv/            | Local Python environment; not committed to Git                               |
 
 ## Setup on Windows
 
@@ -86,11 +86,11 @@ CREATE TABLE IF NOT EXISTS users (
 );
 ```
 
-| Column | Description |
-|---|---|
-| id | Automatically generated primary key |
-| name | Required user name |
-| email | Required, unique email |
+| Column     | Description                                            |
+| ---------- | ------------------------------------------------------ |
+| id         | Automatically generated primary key                    |
+| name       | Required user name                                     |
+| email      | Required, unique email                                 |
 | created_at | Creation time, defaulting to the current UTC timestamp |
 
 Records persist after the server stops. Successful database operations commit; failed operations roll back; connections close after use. PATCH uses a write transaction before reading and updating a user.
@@ -101,14 +101,14 @@ CREATE TABLE IF NOT EXISTS does not migrate an existing table. Future schema cha
 
 Base URL: http://127.0.0.1:8000
 
-| Method | Endpoint | Purpose | Success status |
-|---|---|---|---|
-| GET | / | Check the API is running | 200 |
-| GET | /api/v1/users | List users ordered by ID | 200 |
-| GET | /api/v1/users/{user_id} | Retrieve one user | 200 |
-| POST | /api/v1/users | Create a user | 201 |
-| PATCH | /api/v1/users/{user_id} | Update selected fields | 200 |
-| DELETE | /api/v1/users/{user_id} | Delete a user | 200 |
+| Method | Endpoint                | Purpose                  | Success status |
+| ------ | ----------------------- | ------------------------ | -------------- |
+| GET    | /                       | Check the API is running | 200            |
+| GET    | /api/v1/users           | List users ordered by ID | 200            |
+| GET    | /api/v1/users/{user_id} | Retrieve one user        | 200            |
+| POST   | /api/v1/users           | Create a user            | 201            |
+| PATCH  | /api/v1/users/{user_id} | Update selected fields   | 200            |
+| DELETE | /api/v1/users/{user_id} | Delete a user            | 200            |
 
 An empty user list returns [].
 
@@ -175,13 +175,13 @@ Deletion removes the record from the database.
 - Duplicate emails are rejected by the database's UNIQUE constraint.
 - The current schema does not enforce case-insensitive email uniqueness.
 
-| Status | Meaning |
-|---|---|
-| 200 | Successful read, update, or deletion |
-| 201 | User created |
-| 404 | User not found |
-| 409 | Email already exists |
-| 422 | Invalid request body or user ID |
+| Status | Meaning                              |
+| ------ | ------------------------------------ |
+| 200    | Successful read, update, or deletion |
+| 201    | User created                         |
+| 404    | User not found                       |
+| 409    | Email already exists                 |
+| 422    | Invalid request body or user ID      |
 
 Example error:
 
@@ -223,15 +223,15 @@ Keep the server running and use Swagger /docs, Postman, or Bruno. For the course
 
 Additional checks:
 
-| Test | Expected |
-|---|---|
-| Create a duplicate email | 409 |
-| Change a user's email to another user's email | 409 |
-| Create with a missing name or email | 422 |
-| Submit a blank name or invalid email | 422 |
-| PATCH with {} or an explicit null | 422 |
-| Submit an unexpected field | 422 |
-| Use ID 0, a negative ID, or noninteger text | 422 |
+| Test                                          | Expected |
+| --------------------------------------------- | -------- |
+| Create a duplicate email                      | 409      |
+| Change a user's email to another user's email | 409      |
+| Create with a missing name or email           | 422      |
+| Submit a blank name or invalid email          | 422      |
+| PATCH with {} or an explicit null             | 422      |
+| Submit an unexpected field                    | 422      |
+| Use ID 0, a negative ID, or noninteger text   | 422      |
 
 Use disposable users when testing DELETE.
 
@@ -276,7 +276,33 @@ Ensure its decorator and function start at the top level, outside other function
 
 Run git init once inside the suro-python-api folder before staging and committing.
 
+## Frontend Integration
+
+The React client connects to this API using browser fetch requests.
+
+CORS allows these development origins:
+
+- http://localhost:5173
+- http://127.0.0.1:5173
+
+Allowed methods: GET, POST, PATCH and DELETE.
+Allowed request header: Content-Type.
+
+Manual browser testing completed:
+
+- Create and list users.
+- Edit users and confirm changes after refreshing.
+- Delete users and confirm removal.
+
+Both Python and Node.js backend flows were tested through the React
+client without browser errors.
+
+Python and Node.js use separate local SQLite databases.
+CORS does not replace server-side validation or authentication.
+
 ## Scope
 
-This is a local learning project. It does not currently implement authentication, role management, frontend integration, or CORS configuration. Those are separate follow-up tasks where required. A separate Node.js/Express project will reproduce the same user API for comparison.
-
+This is a local learning project built with FastAPI and SQLite.
+It supports full user CRUD, server-side validation, parameterized SQL,
+and CORS for the React client. Authentication and role management
+are outside the project scope.
